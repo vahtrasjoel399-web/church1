@@ -1,9 +1,10 @@
 export type SpeechItem={id:string;previous:string|null;source:string;endedAt:number|null;receivedAt:number};
 /** Reconcile final text against committed item order, never completion arrival order. */
+export type TranscriptEvent={event_id?:string;type?:string;item_id?:string;previous_item_id?:string|null;delta?:string;transcript?:string};
 export class TranscriptOrder {
  private order:string[]=[];private items=new Map<string,SpeechItem>();private finals=new Set<string>();private events=new Set<string>();private done=new Set<string>();private tails=new Map<string,string>();
  reset(){this.order=[];this.items.clear();this.finals.clear();this.events.clear();this.done.clear();this.tails.clear();}
- handle(e:any,now:number):{partial?:string;ready:SpeechItem[]} {
+ handle(e:TranscriptEvent,now:number):{partial?:string;ready:SpeechItem[]} {
   if(e.event_id){if(this.events.has(e.event_id))return {ready:[]};this.events.add(e.event_id);if(this.events.size>4096)this.events.delete(this.events.values().next().value!);}
   const id=e.item_id;if(!id||this.done.has(id))return {ready:[]};let item=this.items.get(id);if(!item){item={id,previous:null,source:'',endedAt:null,receivedAt:now};this.items.set(id,item);}let partial:string|undefined;
   if(e.type==='input_audio_buffer.speech_stopped')item.endedAt=now-450;

@@ -1,0 +1,16 @@
+{
+  "name": "church-translation",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "church-db",
+      "database_id": "4cadf0dc-c3e5-4dac-b5da-a28fcf8c8fc2",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}

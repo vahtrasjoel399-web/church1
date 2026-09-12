@@ -15,7 +15,11 @@
     "configure": "node scripts/setup.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "test": "node tests/run.mjs",
-    "check": "tsc --noEmit"
+    "test:sql": "python3 tests/sql.py",
+    "test:http": "node tests/http.mjs",
+    "check": "tsc --noEmit",
+    "db:migrate:prod": "wrangler d1 migrations apply DB --remote --config wrangler.production.json",
+    "deploy": "npm run build && wrangler deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

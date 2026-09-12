@@ -1,4 +1,4 @@
-import {authenticated,body,cookieHeader,env,errorResponse,equal,json,rate,sign} from '@/lib/server';
+import {authenticated,localAccess,body,cookieHeader,env,errorResponse,equal,json,rate,sign} from '@/lib/server';
 import {AppError} from '@/lib/providers';
-export async function GET(req:Request){return json({authenticated:await authenticated(req),configured:Boolean(env.OPERATOR_PASSWORD&&env.OPERATOR_PASSWORD.length>=16)});}
+export async function GET(req:Request){return json({authenticated:await authenticated(req),local:localAccess(req),configured:localAccess(req)||Boolean(env.OPERATOR_PASSWORD&&env.OPERATOR_PASSWORD.length>=16)});}
 export async function POST(req:Request){try{const b=await body(req);if(b.action==='logout')return json({ok:true},200,{'Set-Cookie':cookieHeader(req,'church_operator','',0)});await rate('login',12);if(!env.OPERATOR_PASSWORD||env.OPERATOR_PASSWORD.length<16)throw new AppError('Пароль оператора ещё не настроен на сервере.',503);if(typeof b.password!=='string'||b.password.length>256||!await equal(b.password,env.OPERATOR_PASSWORD))throw new AppError('Неверный пароль.',401);const expires=Date.now()+12*60*60*1000;return json({ok:true},200,{'Set-Cookie':cookieHeader(req,'church_operator',`${expires}.${await sign('operator:'+expires)}`,43200)});}catch(e){return errorResponse(e);}}
