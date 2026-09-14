@@ -72,4 +72,7 @@ npx wrangler secret put GEMINI_API_KEY --config dist/server/wrangler.json
 ```
 
 Пароль оператора должен содержать не менее 16 символов. Для обновления кода выполните `npm run deploy`; при добавлении миграций сначала выполните `npm run db:migrate:prod`.
-# church1
+
+## Техническая документация
+
+[Архитектура, API, разработка и эксплуатация](docs/README.md). [Проверка propresenter-connector и границы будущей интеграции](docs/repository-review.md).
