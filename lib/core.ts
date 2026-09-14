@@ -6,9 +6,10 @@ export class TranscriptOrder {
  reset(){this.order=[];this.items.clear();this.finals.clear();this.events.clear();this.done.clear();this.tails.clear();}
  handle(e:TranscriptEvent,now:number):{partial?:string;ready:SpeechItem[]} {
   if(e.event_id){if(this.events.has(e.event_id))return {ready:[]};this.events.add(e.event_id);if(this.events.size>4096)this.events.delete(this.events.values().next().value!);}
+  if(!['input_audio_buffer.speech_stopped','input_audio_buffer.committed','conversation.item.input_audio_transcription.delta','conversation.item.input_audio_transcription.completed'].includes(e.type||''))return {ready:[]};
   const id=e.item_id;if(!id||this.done.has(id))return {ready:[]};let item=this.items.get(id);if(!item){item={id,previous:null,source:'',endedAt:null,receivedAt:now};this.items.set(id,item);}let partial:string|undefined;
   if(e.type==='input_audio_buffer.speech_stopped')item.endedAt=now-450;
-  if(e.type==='input_audio_buffer.committed'){item.previous=e.previous_item_id??null;if(!this.order.includes(id))this.order.push(id);}
+  if(e.type==='input_audio_buffer.committed'){item.endedAt??=now;item.previous=e.previous_item_id??null;if(!this.order.includes(id))this.order.push(id);}
   if(e.type==='conversation.item.input_audio_transcription.delta'){const text=(this.tails.get(id)||'')+(e.delta||'');this.tails.set(id,text);partial=text;}
   if(e.type==='conversation.item.input_audio_transcription.completed'){item.source=String(e.transcript??'').trim();this.finals.add(id);this.tails.delete(id);}
   // WebRTC's reliable ordered data channel gives committed events in audio order.
