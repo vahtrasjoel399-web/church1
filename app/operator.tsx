@@ -118,14 +118,17 @@ const providerName = (p?: string) =>
         ? 'Claude'
         : 'OpenAI';
 const CLAUDE_MODEL_LABELS: Record<ClaudeModel, string> = {
-  'claude-haiku-4-5': 'Haiku 4.5 — быстрый',
+  'claude-haiku-5-5': 'Haiku 5.5 — быстрый и дешёвый',
+  'claude-haiku-4-5': 'Haiku 4.5 — предыдущая версия',
   'claude-sonnet-5-5': 'Sonnet 5.5 — точнее',
   'claude-opus-5-5': 'Opus 5.5 — высокая точность',
   'claude-fable-5-1': 'Fable 5.1 — максимум, медленный',
 };
 const CLAUDE_MODEL_HINTS: Record<ClaudeModel, string> = {
+  'claude-haiku-5-5':
+    '$0.10 / $0.50 за 1 млн токенов. Рекомендуется для живых субтитров.',
   'claude-haiku-4-5':
-    '$1 / $5 за 1 млн токенов. Рекомендуется для живых субтитров.',
+    '$1 / $5 за 1 млн токенов. Дороже Haiku 5.5; без настройки размышления.',
   'claude-sonnet-5-5':
     '$2 / $10 за 1 млн токенов. Лучше передаёт смысл, чуть медленнее.',
   'claude-opus-5-5':
