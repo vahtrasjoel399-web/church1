@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const origin='http://localhost:3000';
 const values=Object.fromEntries(readFileSync('.env','utf8').split('\n').filter(x=>x&&!x.startsWith('#')).map(x=>[x.slice(0,x.indexOf('=')),x.slice(x.indexOf('=')+1)]));
-if(values.OPENAI_API_KEY||values.GEMINI_API_KEY||values.DEEPSEEK_API_KEY)throw new Error('This test requires a local environment without AI keys.');
+if(values.OPENAI_API_KEY||values.GEMINI_API_KEY||values.DEEPSEEK_API_KEY||values.ANTHROPIC_API_KEY)throw new Error('This test requires a local environment without AI keys.');
 let checks=0;const check=(a,b)=>{assert.equal(a,b);checks++;};
 const req=(path,body,cookie)=>fetch(origin+path,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json',Origin:origin}:{}),...(cookie?{Cookie:cookie}:{})},...(body?{body:JSON.stringify(body)}:{})});
 check((await req('/api/control')).status,401);

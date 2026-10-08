@@ -33,9 +33,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import {
+  CLAUDE_EFFORTS,
+  CLAUDE_MODELS,
   defaults,
   percentile,
   publicSettings,
+  type ClaudeEffort,
+  type ClaudeModel,
   type Settings,
 } from '@/lib/settings';
 import { LiveSession, api, micError, type LiveUpdate } from '@/lib/live';
@@ -106,7 +110,34 @@ const timeOfDay = (t: number) =>
     second: '2-digit',
   });
 const providerName = (p?: string) =>
-  p === 'gemini' ? 'Gemini' : p === 'deepseek' ? 'DeepSeek' : 'OpenAI';
+  p === 'gemini'
+    ? 'Gemini'
+    : p === 'deepseek'
+      ? 'DeepSeek'
+      : p === 'anthropic'
+        ? 'Claude'
+        : 'OpenAI';
+const CLAUDE_MODEL_LABELS: Record<ClaudeModel, string> = {
+  'claude-haiku-4-5': 'Haiku 4.5 — быстрый',
+  'claude-sonnet-5-5': 'Sonnet 5.5 — точнее',
+  'claude-opus-5-5': 'Opus 5.5 — высокая точность',
+  'claude-fable-5-1': 'Fable 5.1 — максимум, медленный',
+};
+const CLAUDE_MODEL_HINTS: Record<ClaudeModel, string> = {
+  'claude-haiku-4-5':
+    '$1 / $5 за 1 млн токенов. Рекомендуется для живых субтитров.',
+  'claude-sonnet-5-5':
+    '$2 / $10 за 1 млн токенов. Лучше передаёт смысл, чуть медленнее.',
+  'claude-opus-5-5':
+    '$4 / $20 за 1 млн токенов. Заметно медленнее; проверьте задержку перед службой.',
+  'claude-fable-5-1':
+    '$10 / $50 за 1 млн токенов. Может не успевать за живой речью.',
+};
+const CLAUDE_EFFORT_LABELS: Record<ClaudeEffort, string> = {
+  low: 'Низкий',
+  medium: 'Средний',
+  high: 'Высокий',
+};
 const SAMPLE =
   'Grace and peace to you from God our Father and the Lord Jesus Christ. Today we open the Gospel of John, chapter three.';
 
@@ -1248,6 +1279,51 @@ export default function Operator() {
 
                 <Card title="Доступ и подключение" icon={<ShieldCheck />}>
                   <div className="stack">
+                    {status?.provider === 'anthropic' && (
+                      <>
+                        <Field
+                          label="Модель Claude"
+                          hint={CLAUDE_MODEL_HINTS[s.claudeModel]}
+                        >
+                          <Pick
+                            label="Модель Claude"
+                            value={s.claudeModel}
+                            disabled={active}
+                            onChange={(v) =>
+                              change(
+                                'claudeModel',
+                                v as Settings['claudeModel'],
+                              )
+                            }
+                            options={CLAUDE_MODELS.map((m) => ({
+                              value: m,
+                              label: CLAUDE_MODEL_LABELS[m],
+                            }))}
+                          />
+                        </Field>
+                        <Field
+                          label="Уровень размышления (effort)"
+                          hint={
+                            s.claudeModel === 'claude-haiku-4-5'
+                              ? 'Haiku не размышляет, настройка не применяется.'
+                              : 'Выше — точнее, но медленнее и дороже. На каждую фразу даётся 12 секунд, иначе сеанс остановится.'
+                          }
+                        >
+                          <Segmented
+                            label="Уровень размышления"
+                            value={s.claudeEffort}
+                            disabled={
+                              active || s.claudeModel === 'claude-haiku-4-5'
+                            }
+                            onChange={(v) => change('claudeEffort', v)}
+                            options={CLAUDE_EFFORTS.map((e) => ({
+                              value: e,
+                              label: CLAUDE_EFFORT_LABELS[e],
+                            }))}
+                          />
+                        </Field>
+                      </>
+                    )}
                     <dl className="kv">
                       <dt>Распознавание</dt>
                       <dd>{status?.asrModel ?? '—'}</dd>

@@ -15,7 +15,7 @@ npm run dev
 
 Откройте http://localhost:3000 — локальный пульт работает без пароля. Этот режим включён только в локальной конфигурации и только для localhost/127.0.0.1. На опубликованном сайте пароль остаётся обязательным.
 
-В `.env` заполните `OPENAI_API_KEY` для распознавания и ключ выбранного сервиса перевода: по умолчанию `GEMINI_API_KEY`. Провайдер и модель задаются через `TRANSLATION_PROVIDER`, `TRANSLATION_MODEL` и `ASR_MODEL`. После изменения `.env` повторите `npm run configure` и перезапустите сервер. Без ключей доступны вход и настройки; запуск AI отключён.
+В `.env` заполните `OPENAI_API_KEY` для распознавания и ключ выбранного сервиса перевода: по умолчанию `GEMINI_API_KEY`. Провайдер и модель задаются через `TRANSLATION_PROVIDER`, `TRANSLATION_MODEL` и `ASR_MODEL`. Для перевода через Claude укажите `TRANSLATION_PROVIDER=anthropic` и `ANTHROPIC_API_KEY`. Модель Claude (Haiku 4.5, Sonnet 5.5, Opus 5.5, Fable 5.1) и уровень размышления (effort) выбираются на пульте в карточке «Доступ и подключение»; `TRANSLATION_MODEL` для Claude не используется. По умолчанию Haiku 4.5. После изменения `.env` повторите `npm run configure` и перезапустите сервер. Без ключей доступны вход и настройки; запуск AI отключён.
 
 ## Использование
 
@@ -70,6 +70,8 @@ npm run deploy
 npx wrangler secret put OPERATOR_PASSWORD --config dist/server/wrangler.json
 npx wrangler secret put OPENAI_API_KEY --config dist/server/wrangler.json
 npx wrangler secret put GEMINI_API_KEY --config dist/server/wrangler.json
+# или, если перевод через Claude:
+npx wrangler secret put ANTHROPIC_API_KEY --config dist/server/wrangler.json
 ```
 
 Пароль оператора должен содержать не менее 16 символов. Для обновления кода выполните `npm run deploy`; при добавлении миграций сначала выполните `npm run db:migrate:prod`.
