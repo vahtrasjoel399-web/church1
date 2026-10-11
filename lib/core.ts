@@ -18,6 +18,9 @@ export class TranscriptOrder {
  }
  get oldest(){return this.items.size?Math.min(...Array.from(this.items.values(),x=>x.receivedAt)):null;}
 }
+/** The recognizer takes its language setting as a hint, so English speech or noise can come back as text in another script.
+ *  Only phrases with Cyrillic letters go on to translation; bare numbers are kept because they belong to the sermon. */
+export function isRussian(text:string){return /\p{Script=Cyrillic}/u.test(text)||(/\d/.test(text)&&!/\p{L}/u.test(text));}
 /** Split text at punctuation/words, never slice away content. No audio slicing. */
 export function splitPhrases(text:string,max=650){const words=text.trim().split(/\s+/);const result:string[]=[];let current='';for(const w of words){if(current&&(current.length+w.length+1>max||(/[.!?;:]$/.test(current)&&current.length>100))){result.push(current);current='';}current+=(current?' ':'')+w;}if(current)result.push(current);return result;}
 export function captionPages(text:string,columns:number,lines:number){const pages:string[]=[];let line='',page:string[]=[];const flush=()=>{if(line){page.push(line);line='';}if(page.length>=lines){pages.push(page.join('\n'));page=[];}};for(const word of text.trim().split(/\s+/).filter(Boolean)){let rest=word;while(rest.length>columns){if(line)flush();line=rest.slice(0,columns);rest=rest.slice(columns);flush();}if(line&&line.length+rest.length+1>columns)flush();line+=(line?' ':'')+rest;}if(line)flush();if(page.length)pages.push(page.join('\n'));return pages;}
