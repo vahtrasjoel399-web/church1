@@ -1,5 +1,5 @@
 import type {Settings} from './settings';
-export type CaptionStyle=Pick<Settings,'fontSize'|'color'|'background'|'transparent'|'position'|'margin'|'lines'|'clearSeconds'>;
+export type CaptionStyle=Pick<Settings,'fontSize'|'color'|'background'|'transparent'|'position'|'margin'|'lines'|'clearSeconds'|'target'>;
 export type CaptionSnapshot={revision:number;text:string;published:number;expires:number;serverNow:number;settings:CaptionStyle};
 export type CaptionView={revision:number;text:string;published:number;expires:number;clockOffset:number;settings:CaptionStyle};
 /** A late status request must never overwrite a caption delivered by translate. */

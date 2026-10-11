@@ -35,12 +35,14 @@ import { Slider } from '@/components/ui/slider';
 import {
   CLAUDE_EFFORTS,
   CLAUDE_MODELS,
+  TARGETS,
   defaults,
   percentile,
   publicSettings,
   type ClaudeEffort,
   type ClaudeModel,
   type Settings,
+  type Target,
 } from '@/lib/settings';
 import { LiveSession, api, micError, type LiveUpdate } from '@/lib/live';
 import { acceptCaption, type CaptionView } from '@/lib/caption-state';
@@ -117,6 +119,17 @@ const providerName = (p?: string) =>
       : p === 'anthropic'
         ? 'Claude'
         : 'OpenAI';
+const TARGET_LABELS: Record<Target, string> = { en: 'English', et: 'Eesti' };
+/** Russian genitive and adjective forms for console copy. */
+const TARGET_GENITIVE: Record<Target, string> = {
+  en: 'английского',
+  et: 'эстонского',
+};
+const TARGET_ADJECTIVE: Record<Target, string> = {
+  en: 'английский',
+  et: 'эстонский',
+};
+
 const CLAUDE_MODEL_LABELS: Record<ClaudeModel, string> = {
   'claude-haiku-5-5': 'Haiku 5.5 — быстрый и дешёвый',
   'claude-haiku-4-5': 'Haiku 4.5 — предыдущая версия',
@@ -298,6 +311,7 @@ export default function Operator() {
 
   const change = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     setS((old) => ({ ...old, [key]: value }));
+  const glossaryKey = s.target === 'et' ? 'glossaryEt' : 'glossary';
 
   async function save() {
     const r = await api<{ settings: Settings }>('settings', { settings: s });
@@ -525,8 +539,8 @@ export default function Operator() {
             <Wordmark />
             <h1>Пусть каждый услышит.</h1>
             <p>
-              Русская речь превращается в английские субтитры на экранах церкви
-              и в трансляции.
+              Русская речь превращается в английские или эстонские субтитры на
+              экранах церкви и в трансляции.
             </p>
           </div>
           <form
@@ -720,7 +734,7 @@ export default function Operator() {
                       <div className="stage-empty">
                         <MonitorPlay />
                         {active
-                          ? 'Ожидание английского перевода'
+                          ? `Ожидание ${TARGET_GENITIVE[s.target]} перевода`
                           : 'Субтитры появятся здесь во время служения'}
                       </div>
                     )}
@@ -792,7 +806,7 @@ export default function Operator() {
                           <p className="feed-ru" lang="ru">
                             {entry.ru}
                           </p>
-                          <p className="feed-en" lang="en">
+                          <p className="feed-en" lang={s.target}>
                             {entry.en ??
                               (live.running ? (
                                 <span className="typing" aria-label="Перевожу">
@@ -828,7 +842,7 @@ export default function Operator() {
                         <p className="feed-ru" lang="ru">
                           {status?.source}
                         </p>
-                        <p className="feed-en" lang="en">
+                        <p className="feed-en" lang={s.target}>
                           {status?.caption}
                         </p>
                       </li>
@@ -838,8 +852,9 @@ export default function Operator() {
                       <Radio />
                       <strong>Здесь появится перевод по фразам</strong>
                       <span>
-                        Сверху русская речь, крупно английский перевод. Речь
-                        обрабатывается фрагментами примерно по 3 секунды.
+                        Сверху русская речь, крупно {TARGET_ADJECTIVE[s.target]}{' '}
+                        перевод. Речь обрабатывается фрагментами примерно по 3
+                        секунды.
                       </span>
                     </div>
                   )}
@@ -1202,6 +1217,21 @@ export default function Operator() {
               <div className="stack">
                 <Card title="Подготовка к проповеди" icon={<BookOpen />}>
                   <div className="stack">
+                    <Field
+                      label="Язык субтитров"
+                      hint="Речь распознаётся на русском. У каждого языка свой словарь."
+                    >
+                      <Segmented
+                        label="Язык субтитров"
+                        value={s.target}
+                        disabled={active}
+                        onChange={(v) => change('target', v)}
+                        options={TARGETS.map((t) => ({
+                          value: t,
+                          label: TARGET_LABELS[t],
+                        }))}
+                      />
+                    </Field>
                     <Field label="Тема">
                       <input
                         className="input"
@@ -1227,15 +1257,19 @@ export default function Operator() {
                     </Field>
                     <Field
                       label="Словарь"
-                      value={`${s.glossary.split('\n').filter((x) => x.includes('=')).length} терминов`}
-                      hint="Одна пара на строку: русский термин = English term."
+                      value={`${s[glossaryKey].split('\n').filter((x) => x.includes('=')).length} терминов`}
+                      hint={
+                        s.target === 'et'
+                          ? 'Одна пара на строку: русский термин = eestikeelne termin.'
+                          : 'Одна пара на строку: русский термин = English term.'
+                      }
                     >
                       <textarea
                         className="textarea mono"
                         disabled={active}
-                        value={s.glossary}
+                        value={s[glossaryKey]}
                         maxLength={6000}
-                        onChange={(e) => change('glossary', e.target.value)}
+                        onChange={(e) => change(glossaryKey, e.target.value)}
                         rows={8}
                         spellCheck={false}
                       />
@@ -1432,7 +1466,7 @@ export default function Operator() {
               <Card title="Результат" icon={<CheckCircle2 />}>
                 {testResult ? (
                   <div className="stack">
-                    <div className="result" lang="en">
+                    <div className="result" lang={s.target}>
                       {testResult.text}
                     </div>
                     <dl className="kv">
@@ -1482,7 +1516,7 @@ export default function Operator() {
         </main>
 
         <footer className="footer">
-          <span>Слово · русский → English</span>
+          <span>Слово · русский → {TARGET_LABELS[s.target]}</span>
           <span>
             <ShieldCheck />
             Облачные AI API · аудио не сохраняется приложением

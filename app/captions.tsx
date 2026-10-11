@@ -67,7 +67,7 @@ export function CaptionLayer({
         >
           <p
             className="caption"
-            lang="en"
+            lang={style.target}
             style={{
               color: style.color,
               fontSize: `${style.fontSize / 19.2}cqw`,
